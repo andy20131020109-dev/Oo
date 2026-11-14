@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日語單字學習卡片 - N5和風學習機</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700;900&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'washi': '#FAF8F5', 'washi-card': '#FFFDF9',
+                        'wood-light': '#F2EBE1', 'wood-dark': '#6B533E',
+                        'ai-blue': '#1E293B', 'indigo-jp': '#2C3E50',
+                        'matcha': '#5B7065', 'matcha-light': '#EBF0EC',
+                        'sakura': '#E8B4B8', 'sakura-dark': '#C86D74',
+                        'sumi': '#2B2B2B', 'vermilion': '#C84B31'
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif JP"', 'serif'],
+                        sans: ['"Zen Maru Gothic"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF8F5;
+            background-image: radial-gradient(#E6DFD5 0.8px, transparent 0.8px);
+            background-size: 18px 18px;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            color: #2B2B2B;
+            user-select: none;
+        }
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #FAF8F5; }
+        ::-webkit-scrollbar-thumb { background: #D8CEBE; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #BFAEA0; }
+        .washi-panel {
+            background: rgba(255, 253, 249, 0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(216, 206, 190, 0.6);
+        }
+        .japanese-font { font-family: 'Noto Serif JP', serif; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden text-sumi">
+
+    <header class="w-full washi-panel sticky top-0 z-30 shadow-sm px-4 lg:px-8 py-3 transition-all">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showHub()">
+                <div class="w-10 h-10 rounded-2xl bg-vermilion text-white flex items-center justify-center shadow-md font-bold text-xl font-serif">和</div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide japanese-font text-indigo-jp flex items-center gap-2">
+                        和風日本語単語帳
+                        <span class="text-[11px] px-2 py-0.5 rounded-full bg-wood-light text-wood-dark font-normal border border-wood-dark/20">JLPT N5 / 日常生活</span>
+                    </h1>
+                    <p class="text-xs text-gray-500">N5 初級日語單字學習網頁</p>
+                </div>
+            </div>
+
+            <div id="header-controls" class="hidden flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                <button onclick="showHub()" class="px-3 py-1.5 rounded-xl bg-wood-light hover:bg-wood-dark hover:text-white text-wood-dark text-xs font-bold transition flex items-center gap-1.5 border border-wood-dark/10">
+                    <i class="fa-solid fa-house"></i> 回主題選單
+                </button>
+                <div class="relative flex-1 sm:w-48">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="搜尋單字..." class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-matcha/40 transition">
+                </div>
+                <button id="sound-toggle" onclick="toggleSound()" title="聲音切換" class="w-8 h-8 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-indigo-jp flex items-center justify-center transition shadow-sm">
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-xs"></i>
+                </button>
+                <div class="flex items-center gap-1 bg-wood-light p-1 rounded-xl border border-wood-dark/10 text-xs">
+                    <button id="mode-single" onclick="switchMode('single')" class="px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 bg-white text-indigo-jp shadow-sm"><i class="fa-solid fa-clone"></i> 單卡</button>
+                    <button id="mode-grid" onclick="switchMode('grid')" class="px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 text-gray-600 hover:text-indigo-jp"><i class="fa-solid fa-border-all"></i> 一覽</button>
+                    <button id="mode-quiz" onclick="switchMode('quiz')" class="px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 text-gray-600 hover:text-indigo-jp"><i class="fa-solid fa-graduation-cap"></i> 測驗</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6 flex flex-col items-center">
+        <!-- 主題選單 -->
+        <section id="theme-hub" class="w-full max-w-6xl py-4 flex flex-col items-center animate-fadeIn">
+            <div class="text-center mb-8">
+                <span class="px-3.5 py-1 rounded-full bg-matcha-light text-matcha text-xs font-bold tracking-widest uppercase border border-matcha/20 mb-2 inline-block">N5 24大主題語彙</span>
+                <h2 class="text-2xl sm:text-3xl font-black text-indigo-jp japanese-font mb-2">請選擇主題開始學習</h2>
+                <p class="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
+                    完整涵蓋日常生活各個面向的 24 個主題，搭配假名、羅馬拼音、中文解釋與實用例句。
+                </p>
+            </div>
+
+            <!-- 主題卡片格線 -->
+            <div id="theme-grid-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                <!-- 動態生成 -->
+            </div>
+        </section>
+
+        <!-- 單卡模式 -->
+        <section id="view-single" class="w-full max-w-md hidden flex-col items-center gap-5 my-auto py-2">
+            <div class="w-full flex justify-between items-center px-1">
+                <span id="single-theme-title" class="text-xs font-bold text-wood-dark bg-wood-light px-3 py-1 rounded-full border border-wood-dark/10">主題名稱</span>
+                <span id="single-progress-text" class="text-xs font-bold text-indigo-jp bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">1 / 10</span>
+            </div>
+            <div class="w-full h-96 sm:h-[410px] perspective-1000 cursor-pointer group" onclick="flipCard('single-card')">
+                <div id="single-card" class="w-full h-full relative transform-style-3d transition-transform duration-500 rounded-3xl shadow-lg border-2 border-white/85">
+                    <div class="absolute inset-0 w-full h-full backface-hidden rounded-3xl p-6 flex flex-col justify-between items-center text-center bg-washi-card shadow-inner overflow-hidden border border-wood-dark/10">
+                        <div class="w-full flex justify-between items-center z-10">
+                            <span id="front-category-tag" class="px-3 py-1 rounded-full text-xs font-bold bg-matcha-light text-matcha">單字卡片</span>
+                            <button onclick="event.stopPropagation(); playCurrentTTS();" title="播放語音" class="w-10 h-10 rounded-full bg-white hover:bg-sakura/30 text-indigo-jp flex items-center justify-center transition border border-gray-200 shadow-sm"><i class="fa-solid fa-volume-high text-sm"></i></button>
+                        </div>
+                        <div class="my-auto z-10 flex flex-col items-center">
+                            <span id="front-emoji" class="text-6xl sm:text-7xl mb-3 transition-transform group-hover:scale-105">🏠</span>
+                            <span id="front-kanji" class="text-4xl sm:text-5xl font-black japanese-font tracking-tight mb-2 text-indigo-jp">家族</span>
+                            <span id="front-romaji" class="text-sm font-bold text-matcha tracking-widest uppercase">Kazoku</span>
+                        </div>
+                        <div class="w-full text-xs text-gray-400 flex justify-center items-center gap-1 z-10"><i class="fa-solid fa-rotate text-sakura-dark"></i> 點擊翻面查看假名、意思與例句</div>
+                        <div class="absolute top-0 left-0 w-full h-2 rounded-t-3xl bg-indigo-jp opacity-90"></div>
+                    </div>
+                    <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-3xl p-6 flex flex-col justify-between items-center text-center bg-gradient-to-br from-washi-card via-washi to-wood-light/30 shadow-inner border border-wood-dark/20 overflow-hidden">
+                        <div class="w-full flex justify-between items-center z-10">
+                            <span id="back-kana" class="px-3 py-1 rounded-full text-xs font-bold bg-sakura/30 text-sakura-dark japanese-font">かぞく</span>
+                            <button onclick="event.stopPropagation(); playCurrentTTS();" title="單字發音" class="w-9 h-9 rounded-full bg-white hover:bg-sakura/30 text-indigo-jp flex items-center justify-center transition border border-gray-200 shadow-sm"><i class="fa-solid fa-volume-high text-sm"></i></button>
+                        </div>
+                        <div class="my-auto z-10 flex flex-col items-center gap-3 w-full">
+                            <div id="back-zh" class="text-3xl font-extrabold text-indigo-jp">家人、家庭</div>
+                            <div class="w-full p-3.5 rounded-2xl bg-white/90 border border-gray-200/80 shadow-sm text-left relative">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[11px] font-bold text-vermilion flex items-center gap-1"><i class="fa-solid fa-bookmark"></i> 實用例句</span>
+                                    <button onclick="event.stopPropagation(); playSentenceTTS();" title="朗讀例句" class="text-[11px] text-indigo-jp hover:text-vermilion px-2 py-0.5 rounded-md bg-gray-100 transition"><i class="fa-solid fa-volume-high"></i> 聽例句</button>
+                                </div>
+                                <div id="back-sentence-ja" class="text-sm font-bold text-indigo-jp japanese-font mb-0.5">私の家族は四人です。</div>
+                                <div id="back-sentence-zh" class="text-xs text-gray-500">我的家人有四個人。</div>
+                            </div>
+                        </div>
+                        <div class="w-full text-xs text-gray-400 flex justify-center items-center gap-1 z-10"><i class="fa-solid fa-rotate text-sakura-dark"></i> 點擊卡片翻回正面</div>
+                        <div class="absolute top-0 left-0 w-full h-2 rounded-t-3xl bg-matcha opacity-90"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full flex items-center justify-between gap-3 pt-1">
+                <button onclick="prevCard()" class="flex-1 py-3 px-4 rounded-2xl bg-white border border-gray-200 text-indigo-jp font-bold shadow-sm hover:bg-gray-50 active:scale-95 transition flex items-center justify-center gap-2 text-sm"><i class="fa-solid fa-arrow-left"></i> 上一張</button>
+                <button onclick="flipCard('single-card')" class="w-12 h-12 rounded-2xl bg-sakura/30 border border-sakura-dark/30 text-sakura-dark font-bold shadow-sm hover:bg-sakura/50 active:scale-95 transition flex items-center justify-center shrink-0"><i class="fa-solid fa-rotate text-lg"></i></button>
+                <button onclick="nextCard()" class="flex-1 py-3 px-4 rounded-2xl bg-indigo-jp text-white font-bold shadow-md hover:bg-opacity-90 active:scale-95 transition flex items-center justify-center gap-2 text-sm">下一張 <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </section>
+
+        <!-- 一覽模式 -->
+        <section id="view-grid" class="w-full hidden py-2 animate-fadeIn">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="grid-theme-title" class="text-lg font-bold text-indigo-jp japanese-font flex items-center gap-2"><i class="fa-solid fa-layer-group text-vermilion"></i> 主題單字總覽</h2>
+                <span id="grid-count-badge" class="text-xs text-gray-500 bg-white px-3 py-1 rounded-full border border-gray-200">共 0 項</span>
+            </div>
+            <div id="grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- 測驗模式 -->
+        <section id="view-quiz" class="w-full max-w-md hidden flex-col items-center gap-5 py-2">
+            <div class="w-full washi-panel rounded-2xl p-4 flex items-center justify-between shadow-sm border border-wood-dark/10">
+                <div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-matcha/20 text-matcha flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-check"></i></div><div><div class="text-[10px] text-gray-400">已精通</div><div id="quiz-stat-mastered" class="text-sm font-bold text-matcha">0 / 0</div></div></div>
+                <div class="h-8 w-px bg-gray-200"></div>
+                <div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-sakura/40 text-sakura-dark flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate-right"></i></div><div><div class="text-[10px] text-gray-400">待複習</div><div id="quiz-stat-review" class="text-sm font-bold text-sakura-dark">0 / 0</div></div></div>
+                <button onclick="resetQuiz()" title="重新測驗" class="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-600 transition flex items-center gap-1 font-bold"><i class="fa-solid fa-arrows-rotate"></i> 重置</button>
+            </div>
+            <div class="w-full h-80 sm:h-96 perspective-1000 cursor-pointer" onclick="flipCard('quiz-card')">
+                <div id="quiz-card" class="w-full h-full relative transform-style-3d transition-transform duration-500 rounded-3xl shadow-lg border-2 border-white">
+                    <div class="absolute inset-0 w-full h-full backface-hidden rounded-3xl p-6 flex flex-col justify-between items-center text-center bg-washi-card shadow-inner overflow-hidden">
+                        <div class="w-full flex justify-between items-center"><span class="px-3 py-1 rounded-full text-xs font-bold bg-wood-light text-wood-dark">記憶測驗</span><button onclick="event.stopPropagation(); playQuizTTS();" class="w-9 h-9 rounded-full bg-white hover:bg-sakura/30 text-indigo-jp flex items-center justify-center transition border border-gray-200 shadow-sm"><i class="fa-solid fa-volume-high text-xs"></i></button></div>
+                        <div class="my-auto flex flex-col items-center"><span id="quiz-front-emoji" class="text-6xl mb-2">🏠</span><span id="quiz-front-kanji" class="text-4xl sm:text-5xl font-black japanese-font text-indigo-jp mb-1">家族</span><span id="quiz-front-romaji" class="text-xs font-bold text-gray-400 tracking-widest uppercase">Kazoku</span></div>
+                        <div class="w-full text-xs text-sakura-dark flex justify-center items-center gap-1"><i class="fa-solid fa-hand-pointer"></i> 點擊翻面確認意思</div>
+                        <div class="absolute top-0 left-0 w-full h-2 rounded-t-3xl bg-indigo-jp opacity-90"></div>
+                    </div>
+                    <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-3xl p-6 flex flex-col justify-between items-center text-center bg-gradient-to-br from-washi-card to-wood-light/40 shadow-inner border border-wood-dark/20 overflow-hidden">
+                        <div class="w-full flex justify-between items-center"><span id="quiz-back-kana" class="px-3 py-1 rounded-full text-xs font-bold bg-sakura/30 text-sakura-dark japanese-font">かぞく</span><button onclick="event.stopPropagation(); playQuizTTS();" class="w-9 h-9 rounded-full bg-white hover:bg-sakura/30 text-indigo-jp flex items-center justify-center transition border border-gray-200 shadow-sm"><i class="fa-solid fa-volume-high text-xs"></i></button></div>
+                        <div class="my-auto flex flex-col items-center gap-2 w-full"><div id="quiz-back-zh" class="text-3xl font-extrabold text-indigo-jp">家人、家庭</div><div class="p-3 rounded-xl bg-white/90 border border-gray-200 text-left w-full mt-1"><div class="text-[10px] font-bold text-vermilion mb-0.5">例句</div><div id="quiz-back-sentence" class="text-xs text-indigo-jp japanese-font font-bold">私の家族は四人です。</div><div id="quiz-back-sentence-zh" class="text-[11px] text-gray-500">我的家人有四個人。</div></div></div>
+                        <div class="w-full text-xs text-gray-400">請評估您的熟練度 👇</div>
+                        <div class="absolute top-0 left-0 w-full h-2 rounded-t-3xl bg-matcha opacity-90"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full flex items-center justify-between gap-3 pt-1">
+                <button onclick="markQuiz(false)" class="flex-1 py-3 px-4 rounded-2xl bg-white border-2 border-sakura-dark/40 text-sakura-dark font-bold hover:bg-sakura/20 active:scale-95 transition flex items-center justify-center gap-2 shadow-sm text-sm"><i class="fa-solid fa-xmark"></i> 還不熟</button>
+                <button onclick="markQuiz(true)" class="flex-1 py-3 px-4 rounded-2xl bg-matcha text-white font-bold hover:bg-opacity-90 active:scale-95 transition flex items-center justify-center gap-2 shadow-md text-sm"><i class="fa-solid fa-check"></i> 記住了！</button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="w-full text-center py-4 text-xs text-gray-400 border-t border-gray-200/60 washi-panel mt-auto">
+        <p>和風日語單字卡 · JLPT N5 日常生活單字 (24主題)</p>
+    </footer>
+
+    <script>
+        // 24大完整主題資料庫
+        const themesData = {
+            family: {
+                title: "家庭與人物",
+                desc: "家族、父母、兄弟、朋友與人物稱呼",
+                icon: "👨‍👩‍👧‍👦",
+                items: [
+                    { id: "f1", kanji: "家族", kana: "かぞく", romaji: "Kazoku", zh: "家人、家庭", emoji: "👨‍👩‍👧‍👦", sentenceJa: "私の家族は四人です。", sentenceZh: "我的家人有四個人。" },
+                    { id: "f2", kanji: "父", kana: "ちち", romaji: "Chichi", zh: "爸爸（自己的父親）", emoji: "👨", sentenceJa: "父は会社へ行きます。", sentenceZh: "爸爸去公司。" },
+                    { id: "f3", kanji: "母", kana: "はは", romaji: "Haha", zh: "媽媽（自己的母親）", emoji: "👩", sentenceJa: "母は料理が好きです。", sentenceZh: "媽媽喜歡料理。" },
+                    { id: "f4", kanji: "兄", kana: "あに", romaji: "Ani", zh: "哥哥（自己的哥哥）", emoji: "👦", sentenceJa: "兄は大学生です。", sentenceZh: "哥哥是大學生。" },
+                    { id: "f5", kanji: "姉", kana: "あね", romaji: "Ane", zh: "姊姊（自己的姊姊）", emoji: "👧", sentenceJa: "姉は歌が上手です。", sentenceZh: "姊姊很會唱歌。" },
+                    { id: "f6", kanji: "弟", kana: "おとうと", romaji: "Otouto", zh: "弟弟", emoji: "🧒", sentenceJa: "弟は十歳です。", sentenceZh: "弟弟十歲。" },
+                    { id: "f7", kanji: "妹", kana: "いもうと", romaji: "Imouto", zh: "妹妹", emoji: "👧", sentenceJa: "妹は小学生です。", sentenceZh: "妹妹是小學生。" },
+                    { id: "f8", kanji: "友達", kana: "ともだち", romaji: "Tomodachi", zh: "朋友", emoji: "🧑‍🤝‍🧑", sentenceJa: "友達と学校へ行きます。", sentenceZh: "和朋友一起去學校。" },
+                    { id: "f9", kanji: "先生", kana: "せんせい", romaji: "Sensei", zh: "老師", emoji: "👩‍🏫", sentenceJa: "先生は優しいです。", sentenceZh: "老師很親切。" },
+                    { id: "f10", kanji: "学生", kana: "がくせい", romaji: "Gakusei", zh: "學生", emoji: "🎒", sentenceJa: "私は学生です。", sentenceZh: "我是學生。" }
+                ]
+            },
+            food: {
+                title: "食物與飲料",
+                desc: "米飯、麵包、肉、魚、水果與飲品",
+                icon: "🍱",
+                items: [
+                    { id: "d1", kanji: "ご飯", kana: "ごはん", romaji: "Gohan", zh: "飯、米飯", emoji: "🍚", sentenceJa: "毎朝ご飯を食べます。", sentenceZh: "每天早上吃飯。" },
+                    { id: "d2", kanji: "パン", kana: "ぱん", romaji: "Pan", zh: "麵包", emoji: "🍞", sentenceJa: "朝ご飯にパンを食べます。", sentenceZh: "早餐吃麵包。" },
+                    { id: "d3", kanji: "肉", kana: "にく", romaji: "Niku", zh: "肉", emoji: "🥩", sentenceJa: "私は肉が好きです。", sentenceZh: "我喜歡吃肉。" },
+                    { id: "d4", kanji: "魚", kana: "さかな", romaji: "Sakana", zh: "魚", emoji: "🐟", sentenceJa: "魚を食べます。", sentenceZh: "吃魚。" },
+                    { id: "d5", kanji: "卵", kana: "たまご", romaji: "Tamago", zh: "雞蛋", emoji: "🥚", sentenceJa: "卵を二つ買います。", sentenceZh: "買兩顆雞蛋。" },
+                    { id: "d6", kanji: "牛乳", kana: "ぎゅうにゅう", romaji: "Gyuunyuu", zh: "牛奶", emoji: "🥛", sentenceJa: "毎朝牛乳を飲みます。", sentenceZh: "每天早上喝牛奶。" },
+                    { id: "d7", kanji: "水", kana: "みず", romaji: "Mizu", zh: "水", emoji: "💧", sentenceJa: "水を飲みたいです。", sentenceZh: "我想喝水。" },
+                    { id: "d8", kanji: "お茶", kana: "おちゃ", romaji: "Ocha", zh: "茶", emoji: "🍵", sentenceJa: "お茶を飲みます。", sentenceZh: "喝茶。" },
+                    { id: "d9", kanji: "果物", kana: "くだもの", romaji: "Kudamono", zh: "水果", emoji: "🍎", sentenceJa: "果物を毎日食べます。", sentenceZh: "每天吃水果。" },
+                    { id: "d10", kanji: "野菜", kana: "やさい", romaji: "Yasai", zh: "蔬菜", emoji: "🥦", sentenceJa: "野菜をたくさん食べます。", sentenceZh: "吃很多蔬菜。" }
+                ]
+            },
+            school: {
+                title: "學校與學習",
+                desc: "學校、教室、老師、學生與常用學習用品",
+                icon: "📚",
+                items: [
+                    { id: "s1", kanji: "学校", kana: "がっこう", romaji: "Gakkou", zh: "學校", emoji: "🏫", sentenceJa: "毎日学校へ行きます。", sentenceZh: "每天去學校。" },
+                    { id: "s2", kanji: "教室", kana: "きょうしつ", romaji: "Kyoushitsu", zh: "教室", emoji: "🏫", sentenceJa: "教室に学生がいます。", sentenceZh: "教室裡有學生。" },
+                    { id: "s3", kanji: "勉強", kana: "べんきょう", romaji: "Benkyou", zh: "學習、讀書", emoji: "📖", sentenceJa: "毎日日本語を勉強します。", sentenceZh: "每天學習日語。" },
+                    { id: "s4", kanji: "本", kana: "ほん", romaji: "Hon", zh: "書本", emoji: "📚", sentenceJa: "図書館で本を読みます。", sentenceZh: "在圖書館讀書。" },
+                    { id: "s5", kanji: "辞書", kana: "じしょ", romaji: "Jisho", zh: "字典", emoji: "📕", sentenceJa: "辞書で言葉を調べます。", sentenceZh: "用字典查單字。" },
+                    { id: "s6", kanji: "机", kana: "つくえ", romaji: "Tsukue", zh: "書桌", emoji: "🪑", sentenceJa: "机の上に本があります。", sentenceZh: "書桌上有書。" },
+                    { id: "s7", kanji: "鉛筆", kana: "えんぴつ", romaji: "Enpitsu", zh: "鉛筆", emoji: "✏️", sentenceJa: "鉛筆で名前を書きます。", sentenceZh: "用鉛筆寫名字。" },
+                    { id: "s8", kanji: "紙", kana: "かみ", romaji: "Kami", zh: "紙", emoji: "📄", sentenceJa: "紙に絵をかきます。", sentenceZh: "在紙上畫圖。" },
+                    { id: "s9", kanji: "名前", kana: "なまえ", romaji: "Namae", zh: "名字", emoji: "🪪", sentenceJa: "名前を書いてください。", sentenceZh: "請寫下名字。" },
+                    { id: "s10", kanji: "日本語", kana: "にほんご", romaji: "Nihongo", zh: "日語", emoji: "🇯🇵", sentenceJa: "日本語を話します。", sentenceZh: "說日語。" }
+                ]
+            },
+            daily: {
+                title: "日常動作與時間",
+                desc: "起床、吃飯、睡覺、今天、明天與時間",
+                icon: "⏰",
+                items: [
+                    { id: "t1", kanji: "起きる", kana: "おきる", romaji: "Okiru", zh: "起床", emoji: "🌅", sentenceJa: "毎朝七時に起きます。", sentenceZh: "每天早上七點起床。" },
+                    { id: "t2", kanji: "寝る", kana: "ねる", romaji: "Neru", zh: "睡覺", emoji: "🛏️", sentenceJa: "毎晩十時に寝ます。", sentenceZh: "每天晚上十點睡覺。" },
+                    { id: "t3", kanji: "食べる", kana: "たべる", romaji: "Taberu", zh: "吃", emoji: "🍽️", sentenceJa: "昼ご飯を食べます。", sentenceZh: "吃午餐。" },
+                    { id: "t4", kanji: "飲む", kana: "のむ", romaji: "Nomu", zh: "喝", emoji: "🥤", sentenceJa: "水を飲みます。", sentenceZh: "喝水。" },
+                    { id: "t5", kanji: "行く", kana: "いく", romaji: "Iku", zh: "去", emoji: "🚶", sentenceJa: "学校へ行きます。", sentenceZh: "去學校。" },
+                    { id: "t6", kanji: "帰る", kana: "かえる", romaji: "Kaeru", zh: "回家、返回", emoji: "🏡", sentenceJa: "午後五時に家へ帰ります。", sentenceZh: "下午五點回家。" },
+                    { id: "t7", kanji: "見る", kana: "みる", romaji: "Miru", zh: "看", emoji: "👀", sentenceJa: "テレビを見ます。", sentenceZh: "看電視。" },
+                    { id: "t8", kanji: "聞く", kana: "きく", romaji: "Kiku", zh: "聽、詢問", emoji: "👂", sentenceJa: "音楽を聞きます。", sentenceZh: "聽音樂。" },
+                    { id: "t9", kanji: "今日", kana: "きょう", romaji: "Kyou", zh: "今天", emoji: "📅", sentenceJa: "今日は学校へ行きます。", sentenceZh: "今天去學校。" },
+                    { id: "t10", kanji: "明日", kana: "あした", romaji: "Ashita", zh: "明天", emoji: "🌄", sentenceJa: "明日は休みです。", sentenceZh: "明天放假。" }
+                ]
+            },
+            transport: {
+                title: "交通與地點",
+                desc: "電車、車站、道路與生活場所",
+                icon: "🚉",
+                items: [
+                    { id: "tr1", kanji: "電車", kana: "でんしゃ", romaji: "Densha", zh: "電車", emoji: "🚆", sentenceJa: "電車で駅へ行きます。", sentenceZh: "搭電車去車站。" },
+                    { id: "tr2", kanji: "駅", kana: "えき", romaji: "Eki", zh: "車站", emoji: "🚉", sentenceJa: "駅はあそこです。", sentenceZh: "車站在那裡。" },
+                    { id: "tr3", kanji: "車", kana: "くるま", romaji: "Kuruma", zh: "汽車", emoji: "🚗", sentenceJa: "車で町へ行きます。", sentenceZh: "開車去市區。" },
+                    { id: "tr4", kanji: "自転車", kana: "じてんしゃ", romaji: "Jitensha", zh: "腳踏車", emoji: "🚲", sentenceJa: "自転車に乗ります。", sentenceZh: "騎腳踏車。" },
+                    { id: "tr5", kanji: "道", kana: "みち", romaji: "Michi", zh: "道路、路", emoji: "🛣️", sentenceJa: "この道は広いです。", sentenceZh: "這條路很寬。" },
+                    { id: "tr6", kanji: "店", kana: "みせ", romaji: "Mise", zh: "店、商店", emoji: "🏪", sentenceJa: "あの店は新しいです。", sentenceZh: "那間店是新的。" },
+                    { id: "tr7", kanji: "病院", kana: "びょういん", romaji: "Byouin", zh: "醫院", emoji: "🏥", sentenceJa: "病院は駅の近くです。", sentenceZh: "醫院在車站附近。" },
+                    { id: "tr8", kanji: "公園", kana: "こうえん", romaji: "Kouen", zh: "公園", emoji: "🌳", sentenceJa: "公園で遊びます。", sentenceZh: "在公園玩。" },
+                    { id: "tr9", kanji: "銀行", kana: "ぎんこう", romaji: "Ginkou", zh: "銀行", emoji: "🏦", sentenceJa: "銀行はあそこにあります。", sentenceZh: "銀行在那裡。" },
+                    { id: "tr10", kanji: "郵便局", kana: "ゆうびんきょく", romaji: "Yuubinkyoku", zh: "郵局", emoji: "📮", sentenceJa: "郵便局で手紙を出します。", sentenceZh: "在郵局寄信。" }
+                ]
+            },
+            colors: {
+                title: "顏色與形容",
+                desc: "基本色彩、大小、長短與外觀描述",
+                icon: "🎨",
+                items: [
+                    { id: "c1", kanji: "赤い", kana: "あかい", romaji: "Akai", zh: "紅色的", emoji: "🔴", sentenceJa: "赤い花が好きです。", sentenceZh: "我喜歡紅色的花。" },
+                    { id: "c2", kanji: "青い", kana: "あおい", romaji: "Aoi", zh: "藍色的", emoji: "🔵", sentenceJa: "青い空がきれいです。", sentenceZh: "藍色的天空很漂亮。" },
+                    { id: "c3", kanji: "白い", kana: "しろい", romaji: "Shiroi", zh: "白色的", emoji: "⚪", sentenceJa: "白い猫がいます。", sentenceZh: "有一隻白色的貓。" },
+                    { id: "c4", kanji: "黒い", kana: "くろい", romaji: "Kuroi", zh: "黑色的", emoji: "⚫", sentenceJa: "黒いかばんを持っています。", sentenceZh: "我拿著黑色的包包。" },
+                    { id: "c5", kanji: "黄色い", kana: "きいろい", romaji: "Kiiroi", zh: "黃色的", emoji: "🟡", sentenceJa: "黄色い花が咲いています。", sentenceZh: "黃色的花正在盛開。" },
+                    { id: "c6", kanji: "緑", kana: "みどり", romaji: "Midori", zh: "綠色", emoji: "🟢", sentenceJa: "緑が多い町です。", sentenceZh: "這是一座綠意盎然的城鎮。" },
+                    { id: "c7", kanji: "色", kana: "いろ", romaji: "Iro", zh: "顏色", emoji: "🎨", sentenceJa: "この色が好きです。", sentenceZh: "我喜歡這個顏色。" },
+                    { id: "c8", kanji: "大きい", kana: "おおきい", romaji: "Ookii", zh: "大的", emoji: "🐘", sentenceJa: "大きい犬がいます。", sentenceZh: "有一隻大狗。" },
+                    { id: "c9", kanji: "小さい", kana: "ちいさい", romaji: "Chiisai", zh: "小的", emoji: "🐁", sentenceJa: "小さい箱があります。", sentenceZh: "有一個小箱子。" },
+                    { id: "c10", kanji: "長い", kana: "ながい", romaji: "Nagai", zh: "長的", emoji: "📏", sentenceJa: "この道は長いです。", sentenceZh: "這條路很長。" }
+                ]
+            },
+            clothes: {
+                title: "衣物與穿著",
+                desc: "衣服、帽子、襪子與穿脫動作",
+                icon: "👕",
+                items: [
+                    { id: "cl1", kanji: "服", kana: "ふく", romaji: "Fuku", zh: "衣服", emoji: "👕", sentenceJa: "新しい服を買いました。", sentenceZh: "我買了新衣服。" },
+                    { id: "cl2", kanji: "シャツ", kana: "しゃつ", romaji: "Shatsu", zh: "襯衫", emoji: "👔", sentenceJa: "白いシャツを着ます。", sentenceZh: "穿白色襯衫。" },
+                    { id: "cl3", kanji: "ズボン", kana: "ずぼん", romaji: "Zubon", zh: "褲子", emoji: "👖", sentenceJa: "黒いズボンをはきます。", sentenceZh: "穿黑色褲子。" },
+                    { id: "cl4", kanji: "靴下", kana: "くつした", romaji: "Kutsushita", zh: "襪子", emoji: "🧦", sentenceJa: "靴下を二足買います。", sentenceZh: "買兩雙襪子。" },
+                    { id: "cl5", kanji: "帽子", kana: "ぼうし", romaji: "Boushi", zh: "帽子", emoji: "🧢", sentenceJa: "帽子をかぶります。", sentenceZh: "戴帽子。" },
+                    { id: "cl6", kanji: "上着", kana: "うわぎ", romaji: "Uwagi", zh: "外套、上衣", emoji: "🧥", sentenceJa: "寒いので上着を着ます。", sentenceZh: "因為冷，所以穿上外套。" },
+                    { id: "cl7", kanji: "着る", kana: "きる", romaji: "Kiru", zh: "穿（上半身衣物）", emoji: "🧍", sentenceJa: "毎朝制服を着ます。", sentenceZh: "每天早上穿制服。" },
+                    { id: "cl8", kanji: "脱ぐ", kana: "ぬぐ", romaji: "Nugu", zh: "脫下衣物", emoji: "🧥", sentenceJa: "家で靴を脱ぎます。", sentenceZh: "在家脫鞋。" },
+                    { id: "cl9", kanji: "着物", kana: "きもの", romaji: "Kimono", zh: "和服", emoji: "👘", sentenceJa: "日本の着物はきれいです。", sentenceZh: "日本和服很漂亮。" },
+                    { id: "cl10", kanji: "手袋", kana: "てぶくろ", romaji: "Tebukuro", zh: "手套", emoji: "🧤", sentenceJa: "冬に手袋を使います。", sentenceZh: "冬天使用手套。" }
+                ]
+            },
+            week: {
+                title: "日本星期 (七曜)",
+                desc: "月曜日至日曜日，認識完整星期名稱",
+                icon: "📅",
+                items: [
+                    { id: "w1", kanji: "月曜日", kana: "げつようび", romaji: "Getsuyoubi", zh: "星期一", emoji: "🌙", sentenceJa: "月曜日に学校へ行きます。", sentenceZh: "星期一去學校。" },
+                    { id: "w2", kanji: "火曜日", kana: "かようび", romaji: "Kayoubi", zh: "星期二", emoji: "🔥", sentenceJa: "火曜日はそうじの日です。", sentenceZh: "星期二是打掃日。" },
+                    { id: "w3", kanji: "水曜日", kana: "すいようび", romaji: "Suiyoubi", zh: "星期三", emoji: "💧", sentenceJa: "水曜日に買い物をします。", sentenceZh: "星期三買東西。" },
+                    { id: "w4", kanji: "木曜日", kana: "もくようび", romaji: "Mokuyoubi", zh: "星期四", emoji: "🌳", sentenceJa: "木曜日は図書館へ行きます。", sentenceZh: "星期四去圖書館。" },
+                    { id: "w5", kanji: "金曜日", kana: "きんようび", romaji: "Kinyoubi", zh: "星期五", emoji: "💰", sentenceJa: "金曜日の夜はうれしいです。", sentenceZh: "星期五晚上很高興。" },
+                    { id: "w6", kanji: "土曜日", kana: "どようび", romaji: "Doyoubi", zh: "星期六", emoji: "🏜️", sentenceJa: "土曜日に友達と会います。", sentenceZh: "星期六跟朋友見面。" },
+                    { id: "w7", kanji: "日曜日", kana: "にちようび", romaji: "Nichiyoubi", zh: "星期日", emoji: "☀️", sentenceJa: "日曜日はやすみです。", sentenceZh: "星期日休息。" }
+                ]
+            },
+            vege: {
+                title: "蔬菜水果",
+                desc: "人参、大根、苺、葡萄等蔬果名稱",
+                icon: "🥦",
+                items: [
+                    { id: "v1", kanji: "人参", kana: "にんじん", romaji: "Ninjin", zh: "胡蘿蔔", emoji: "🥕", sentenceJa: "人参を甘く煮ます。", sentenceZh: "把胡蘿蔔煮甜。" },
+                    { id: "v2", kanji: "大根", kana: "だいこん", romaji: "Daikon", zh: "白蘿蔔", emoji: "🥗", sentenceJa: "大根のおみそ汁を作ります。", sentenceZh: "做白蘿蔔味噌湯。" },
+                    { id: "v3", kanji: "胡瓜", kana: "きゅうり", romaji: "Kyuuri", zh: "小黃瓜", emoji: "🥒", sentenceJa: "新鮮な胡瓜を食べます。", sentenceZh: "吃新鮮的小黃瓜。" },
+                    { id: "v4", kanji: "茄子", kana: "なす", romaji: "Nasu", zh: "茄子", emoji: "🍆", sentenceJa: "茄子を焼いて食べます。", sentenceZh: "烤茄子吃。" },
+                    { id: "v5", kanji: "葱", kana: "ねぎ", romaji: "Negi", zh: "蔥", emoji: "🌱", sentenceJa: "ねぎを細かく切ります。", sentenceZh: "把蔥切細。" },
+                    { id: "v6", kanji: "桃", kana: "もも", romaji: "Momo", zh: "桃子", emoji: "🍑", sentenceJa: "甘い桃を食べました。", sentenceZh: "吃了甜桃子。" },
+                    { id: "v7", kanji: "柿", kana: "かき", romaji: "Kaki", zh: "柿子", emoji: "🍊", sentenceJa: "秋に柿が実ります。", sentenceZh: "秋天柿子結實。" },
+                    { id: "v8", kanji: "苺", kana: "いちご", romaji: "Ichigo", zh: "草莓", emoji: "🍓", sentenceJa: "赤い苺がとても甘いです。", sentenceZh: "紅草莓非常甜。" },
+                    { id: "v9", kanji: "葡萄", kana: "ぶどう", romaji: "Budou", zh: "葡萄", emoji: "🍇", sentenceJa: "山梨の葡萄はおいしいです。", sentenceZh: "山梨的葡萄很好吃。" },
+                    { id: "v10", kanji: "蜜柑", kana: "みかん", romaji: "Mikan", zh: "蜜柑／橘子", emoji: "🍊", sentenceJa: "冬に蜜柑を食べます。", sentenceZh: "冬天吃蜜柑。" },
+                    { id: "v11", kanji: "梨", kana: "なし", romaji: "Nashi", zh: "水梨", emoji: "🍐", sentenceJa: "みずみずしい梨です。", sentenceZh: "多汁的水梨。" }
+                ]
+            },
+            household: {
+                title: "生活用品與家具",
+                desc: "箸、傘、鏡、時計、鍵、財布等物品",
+                icon: "🥢",
+                items: [
+                    { id: "h1", kanji: "箸", kana: "はし", romaji: "Hashi", zh: "筷子", emoji: "🥢", sentenceJa: "箸でご飯を食べます。", sentenceZh: "用筷子吃飯。" },
+                    { id: "h2", kanji: "傘", kana: "かさ", romaji: "Kasa", zh: "雨傘", emoji: "☂️", sentenceJa: "雨が降るので傘を持ちます。", sentenceZh: "下雨所以帶傘。" },
+                    { id: "h3", kanji: "鏡", kana: "かがみ", romaji: "Kagami", zh: "鏡子", emoji: "🪞", sentenceJa: "鏡を見て顔を洗います。", sentenceZh: "照鏡子洗臉。" },
+                    { id: "h4", kanji: "時計", kana: "とけい", romaji: "Tokei", zh: "時鐘／手錶", emoji: "🕰️", sentenceJa: "部屋に時計があります。", sentenceZh: "房間裡有時鐘。" },
+                    { id: "h5", kanji: "鍵", kana: "かぎ", romaji: "Kagi", zh: "鑰匙", emoji: "🔑", sentenceJa: "車の鍵をポケットに入れます。", sentenceZh: "把車鑰匙放進口袋。" },
+                    { id: "h6", kanji: "靴", kana: "くつ", romaji: "Kutsu", zh: "鞋子", emoji: "👞", sentenceJa: "新しい靴をはきます。", sentenceZh: "穿新鞋。" },
+                    { id: "h7", kanji: "鞄", kana: "かばん", romaji: "Kaban", zh: "包包", emoji: "👜", sentenceJa: "鞄に本を入れます。", sentenceZh: "把書放進包包。" },
+                    { id: "h8", kanji: "皿", kana: "さら", romaji: "Sara", zh: "盤子", emoji: "🍽️", sentenceJa: "皿をきれいに洗います。", sentenceZh: "把盤子洗乾淨。" },
+                    { id: "h9", kanji: "鋏", kana: "はさみ", romaji: "Hasami", zh: "剪刀", emoji: "✂️", sentenceJa: "鋏で紙を切ります。", sentenceZh: "用剪刀剪紙。" },
+                    { id: "h10", kanji: "財布", kana: "さいふ", romaji: "Saifu", zh: "皮夾／錢包", emoji: "👛", sentenceJa: "財布を大切にします。", sentenceZh: "珍惜錢包。" }
+                ]
+            },
+            nature: {
+                title: "自然與天氣",
+                desc: "雨、雪、風、空、海、山與自然景物",
+                icon: "🌸",
+                items: [
+                    { id: "n1", kanji: "雨", kana: "あめ", romaji: "Ame", zh: "雨", emoji: "🌧️", sentenceJa: "静かに雨が降っています。", sentenceZh: "靜靜地下著雨。" },
+                    { id: "n2", kanji: "雪", kana: "ゆき", romaji: "Yuki", zh: "雪", emoji: "❄️", sentenceJa: "山に白い雪が降ります。", sentenceZh: "山上下著白雪。" },
+                    { id: "n3", kanji: "風", kana: "かぜ", romaji: "Kaze", zh: "風", emoji: "🍃", sentenceJa: "心地よい風が吹きます。", sentenceZh: "吹著舒適的風。" },
+                    { id: "n4", kanji: "空", kana: "そら", romaji: "Sora", zh: "天空", emoji: "🌤️", sentenceJa: "青い空が広がっています。", sentenceZh: "蔚藍的天空一望無際。" },
+                    { id: "n5", kanji: "海", kana: "うみ", romaji: "Umi", zh: "大海", emoji: "🌊", sentenceJa: "夏に海へ行きます。", sentenceZh: "夏天去海邊。" },
+                    { id: "n6", kanji: "山", kana: "やま", romaji: "Yama", zh: "山", emoji: "⛰️", sentenceJa: "高い山へ登ります。", sentenceZh: "攀登高山。" },
+                    { id: "n7", kanji: "川", kana: "かわ", romaji: "Kawa", zh: "河流", emoji: "🏞️", sentenceJa: "きれいな川が流れています。", sentenceZh: "流著美麗的河流。" },
+                    { id: "n8", kanji: "花", kana: "はな", romaji: "Hana", zh: "花朵", emoji: "🌸", sentenceJa: "庭にきれいな花が咲きます。", sentenceZh: "院子裡開著美麗的花。" },
+                    { id: "n9", kanji: "月", kana: "つき", romaji: "Tsuki", zh: "月亮", emoji: "🌕", sentenceJa: "今夜は月がきれいです。", sentenceZh: "今晚月色很美。" },
+                    { id: "n10", kanji: "太陽", kana: "たいよう", romaji: "Taiyou", zh: "太陽", emoji: "☀️", sentenceJa: "太陽がのぼります。", sentenceZh: "太陽升起。" },
+                    { id: "n11", kanji: "雲", kana: "くも", romaji: "Kumo", zh: "雲朵", emoji: "☁️", sentenceJa: "白い雲が浮かんでいます。", sentenceZh: "飄浮著白雲。" },
+                    { id: "n12", kanji: "星", kana: "ほし", romaji: "Hoshi", zh: "星星", emoji: "⭐", sentenceJa: "夜空に星が光ります。", sentenceZh: "夜空中繁星閃爍。" }
+                ]
+            },
+            body: {
+                title: "身體部位與心境",
+                desc: "目、耳、口、手、足、心、頭、顔與体",
+                icon: "👁️",
+                items: [
+                    { id: "b1", kanji: "目", kana: "め", romaji: "Me", zh: "眼睛", emoji: "👁️", sentenceJa: "目を閉じて休んでいます。", sentenceZh: "閉上眼睛休息。" },
+                    { id: "b2", kanji: "耳", kana: "みみ", romaji: "Mimi", zh: "耳朵", emoji: "👂", sentenceJa: "耳をすませて聞きます。", sentenceZh: "仔細聆聽。" },
+                    { id: "b3", kanji: "口", kana: "くち", romaji: "Kuchi", zh: "嘴巴", emoji: "👄", sentenceJa: "大きな口を開けます。", sentenceZh: "張大嘴巴。" },
+                    { id: "b4", kanji: "手", kana: "て", romaji: "Te", zh: "手", emoji: "✋", sentenceJa: "きれいに手を洗います。", sentenceZh: "把手洗乾淨。" },
+                    { id: "b5", kanji: "足", kana: "あし", romaji: "Ashi", zh: "腳／腿", emoji: "🦶", sentenceJa: "たくさん歩いて足が痛いです。", sentenceZh: "走了很多路，腳很痠痛。" },
+                    { id: "b6", kanji: "心", kana: "こころ", romaji: "Kokoro", zh: "心靈／心意", emoji: "❤️", sentenceJa: "優しい心を持ちます。", sentenceZh: "懷著溫柔的心。" },
+                    { id: "b7", kanji: "頭", kana: "あたま", romaji: "Atama", zh: "頭部／頭腦", emoji: "🧠", sentenceJa: "頭を働かせて考えます。", sentenceZh: "動腦思考。" },
+                    { id: "b8", kanji: "顔", kana: "かお", romaji: "Kao", zh: "臉龐", emoji: "😊", sentenceJa: "笑顔がすてきです。", sentenceZh: "笑容很美好。" },
+                    { id: "b9", kanji: "声", kana: "こえ", romaji: "Koe", zh: "聲音", emoji: "🗣️", sentenceJa: "美しい声を聞きます。", sentenceZh: "聽見美妙的聲音。" },
+                    { id: "b10", kanji: "体", kana: "からだ", romaji: "Karada", zh: "身體", emoji: "🧍", sentenceJa: "体を大切にします。", sentenceZh: "珍惜身體健康。" },
+                    { id: "b11", kanji: "お腹", kana: "おなか", romaji: "Onaka", zh: "肚子", emoji: "🤰", sentenceJa: "お腹がすきました。", sentenceZh: "肚子餓了。" }
+                ]
+            },
+            room: {
+                title: "房間與居家空間",
+                desc: "部屋、窓、ドア、壁、床、天井等空間",
+                icon: "🛏️",
+                items: [
+                    { id: "r1", kanji: "部屋", kana: "へや", romaji: "Heya", zh: "房間", emoji: "🛏️", sentenceJa: "私の部屋は広いです。", sentenceZh: "我的房間很寬敞。" },
+                    { id: "r2", kanji: "窓", kana: "まど", romaji: "Mado", zh: "窗戶", emoji: "🪟", sentenceJa: "窓を開けます。", sentenceZh: "打開窗戶。" },
+                    { id: "r3", kanji: "ドア", kana: "どあ", romaji: "Doa", zh: "門", emoji: "🚪", sentenceJa: "ドアを閉めます。", sentenceZh: "關上門。" },
+                    { id: "r4", kanji: "壁", kana: "かべ", romaji: "Kabe", zh: "牆壁", emoji: "🧱", sentenceJa: "壁に絵があります。", sentenceZh: "牆上有畫。" },
+                    { id: "r5", kanji: "床", kana: "ゆか", romaji: "Yuka", zh: "地板", emoji: "🪵", sentenceJa: "床を掃除します。", sentenceZh: "打掃地板。" },
+                    { id: "r6", kanji: "天井", kana: "てんじょう", romaji: "Tenjou", zh: "天花板", emoji: "🏠", sentenceJa: "天井が高いです。", sentenceZh: "天花板很高。" },
+                    { id: "r7", kanji: "玄関", kana: "げんかん", romaji: "Genkan", zh: "玄關", emoji: "🚪", sentenceJa: "玄関に靴があります。", sentenceZh: "玄關有鞋子。" },
+                    { id: "r8", kanji: "階段", kana: "かいだん", romaji: "Kaidan", zh: "樓梯", emoji: "🪜", sentenceJa: "階段を上ります。", sentenceZh: "走上樓梯。" },
+                    { id: "r9", kanji: "廊下", kana: "ろうか", romaji: "Rouka", zh: "走廊", emoji: "🚶", sentenceJa: "廊下を歩きます。", sentenceZh: "在走廊走路。" },
+                    { id: "r10", kanji: "庭", kana: "にわ", romaji: "Niwa", zh: "庭院", emoji: "🌳", sentenceJa: "庭に花があります。", sentenceZh: "庭院裡有花。" }
+                ]
+            },
+            kitchen: {
+                title: "廚房與烹飪",
+                desc: "台所、包丁、鍋、冷蔵庫、電子レンジ等",
+                icon: "🍳",
+                items: [
+                    { id: "k1", kanji: "台所", kana: "だいどころ", romaji: "Daidokoro", zh: "廚房", emoji: "🍳", sentenceJa: "台所で料理します。", sentenceZh: "在廚房做菜。" },
+                    { id: "k2", kanji: "包丁", kana: "ほうちょう", romaji: "Houchou", zh: "菜刀", emoji: "🔪", sentenceJa: "包丁を使います。", sentenceZh: "使用菜刀。" },
+                    { id: "k3", kanji: "鍋", kana: "なべ", romaji: "Nabe", zh: "鍋子", emoji: "🍲", sentenceJa: "鍋でスープを作ります。", sentenceZh: "用鍋子煮湯。" },
+                    { id: "k4", kanji: "フライパン", kana: "ふらいぱん", romaji: "Furaipan", zh: "平底鍋", emoji: "🍳", sentenceJa: "フライパンで卵を焼きます。", sentenceZh: "用平底鍋煎蛋。" },
+                    { id: "k5", kanji: "冷蔵庫", kana: "れいぞうこ", romaji: "Reizouko", zh: "冰箱", emoji: "🧊", sentenceJa: "冷蔵庫に牛乳があります。", sentenceZh: "冰箱裡有牛奶。" },
+                    { id: "k6", kanji: "電子レンジ", kana: "でんしれんじ", romaji: "Denshi Renji", zh: "微波爐", emoji: "♨️", sentenceJa: "電子レンジで温めます。", sentenceZh: "用微波爐加熱。" },
+                    { id: "k7", kanji: "コップ", kana: "こっぷ", romaji: "Koppu", zh: "杯子", emoji: "🥛", sentenceJa: "コップに水を入れます。", sentenceZh: "把水倒進杯子。" },
+                    { id: "k8", kanji: "スプーン", kana: "すぷーん", romaji: "Supuun", zh: "湯匙", emoji: "🥄", sentenceJa: "スプーンで食べます。", sentenceZh: "用湯匙吃。" },
+                    { id: "k9", kanji: "フォーク", kana: "ふぉーく", romaji: "Fooku", zh: "叉子", emoji: "🍴", sentenceJa: "フォークを使います。", sentenceZh: "使用叉子。" },
+                    { id: "k10", kanji: "料理", kana: "りょうり", romaji: "Ryouri", zh: "料理、烹飪", emoji: "🍱", sentenceJa: "母の料理が好きです。", sentenceZh: "我喜歡媽媽做的料理。" }
+                ]
+            },
+            bathroom: {
+                title: "浴室與清潔",
+                desc: "風呂、シャワー、石鹸、歯ブラシ、掃除等",
+                icon: "🛁",
+                items: [
+                    { id: "ba1", kanji: "風呂", kana: "ふろ", romaji: "Furo", zh: "浴缸、洗澡", emoji: "🛁", sentenceJa: "毎日風呂に入ります。", sentenceZh: "每天洗澡。" },
+                    { id: "ba2", kanji: "シャワー", kana: "しゃわー", romaji: "Shawaa", zh: "淋浴", emoji: "🚿", sentenceJa: "シャワーを浴びます。", sentenceZh: "沖澡。" },
+                    { id: "ba3", kanji: "石鹸", kana: "せっけん", romaji: "Sekken", zh: "肥皂", emoji: "🧼", sentenceJa: "石鹸で手を洗います。", sentenceZh: "用肥皂洗手。" },
+                    { id: "ba4", kanji: "歯ブラシ", kana: "はぶらし", romaji: "Haburashi", zh: "牙刷", emoji: "🪥", sentenceJa: "歯ブラシで歯を磨きます。", sentenceZh: "用牙刷刷牙。" },
+                    { id: "ba5", kanji: "歯磨き粉", kana: "はみがきこ", romaji: "Hamigakiko", zh: "牙膏", emoji: "🦷", sentenceJa: "歯磨き粉を使います。", sentenceZh: "使用牙膏。" },
+                    { id: "ba6", kanji: "タオル", kana: "たおる", romaji: "Taoru", zh: "毛巾", emoji: "🧖", sentenceJa: "タオルで顔を拭きます。", sentenceZh: "用毛巾擦臉。" },
+                    { id: "ba7", kanji: "洗濯", kana: "せんたく", romaji: "Sentaku", zh: "洗衣服", emoji: "👕", sentenceJa: "日曜日に洗濯します。", sentenceZh: "星期日洗衣服。" },
+                    { id: "ba8", kanji: "掃除", kana: "そうじ", romaji: "Souji", zh: "打掃", emoji: "🧹", sentenceJa: "部屋を掃除します。", sentenceZh: "打掃房間。" },
+                    { id: "ba9", kanji: "ごみ", kana: "ごみ", romaji: "Gomi", zh: "垃圾", emoji: "🗑️", sentenceJa: "ごみを捨てます。", sentenceZh: "丟垃圾。" },
+                    { id: "ba10", kanji: "歯", kana: "は", romaji: "Ha", zh: "牙齒", emoji: "😁", sentenceJa: "毎朝歯を磨きます。", sentenceZh: "每天早上刷牙。" }
+                ]
+            },
+            appliances: {
+                title: "家電與電子用品",
+                desc: "テレビ、ラジオ、携帯電話、パソコン、エアコン",
+                icon: "📺",
+                items: [
+                    { id: "ap1", kanji: "テレビ", kana: "てれび", romaji: "Terebi", zh: "電視", emoji: "📺", sentenceJa: "テレビを見ます。", sentenceZh: "看電視。" },
+                    { id: "ap2", kanji: "ラジオ", kana: "らじお", romaji: "Rajio", zh: "收音機", emoji: "📻", sentenceJa: "ラジオを聞きます。", sentenceZh: "聽收音機。" },
+                    { id: "ap3", kanji: "電話", kana: "でんわ", romaji: "Denwa", zh: "電話", emoji: "☎️", sentenceJa: "友達に電話します。", sentenceZh: "打電話給朋友。" },
+                    { id: "ap4", kanji: "携帯電話", kana: "けいたいでんわ", romaji: "Keitai Denwa", zh: "手機", emoji: "📱", sentenceJa: "携帯電話を使います。", sentenceZh: "使用手機。" },
+                    { id: "ap5", kanji: "パソコン", kana: "ぱそこん", romaji: "Pasokon", zh: "電腦", emoji: "💻", sentenceJa: "パソコンで勉強します。", sentenceZh: "用電腦學習。" },
+                    { id: "ap6", kanji: "カメラ", kana: "かめら", romaji: "Kamera", zh: "相機", emoji: "📷", sentenceJa: "カメラで写真を撮ります。", sentenceZh: "用相機拍照。" },
+                    { id: "ap7", kanji: "電気", kana: "でんき", romaji: "Denki", zh: "電燈、電力", emoji: "💡", sentenceJa: "電気をつけます。", sentenceZh: "開燈。" },
+                    { id: "ap8", kanji: "エアコン", kana: "えあこん", romaji: "Eakon", zh: "冷氣", emoji: "❄️", sentenceJa: "エアコンをつけます。", sentenceZh: "開冷氣。" },
+                    { id: "ap9", kanji: "電池", kana: "でんち", romaji: "Denchi", zh: "電池", emoji: "🔋", sentenceJa: "電池を買います。", sentenceZh: "買電池。" },
+                    { id: "ap10", kanji: "音楽", kana: "おんがく", romaji: "Ongaku", zh: "音樂", emoji: "🎵", sentenceJa: "音楽を聞きます。", sentenceZh: "聽音樂。" }
+                ]
+            },
+            furniture: {
+                title: "家具與擺設",
+                desc: "椅子、ベッド、本棚、ソファ、カーテン等",
+                icon: "🪑",
+                items: [
+                    { id: "fu1", kanji: "椅子", kana: "いす", romaji: "Isu", zh: "椅子", emoji: "🪑", sentenceJa: "椅子に座ります。", sentenceZh: "坐在椅子上。" },
+                    { id: "fu2", kanji: "ベッド", kana: "べっど", romaji: "Beddo", zh: "床", emoji: "🛏️", sentenceJa: "ベッドで寝ます。", sentenceZh: "在床上睡覺。" },
+                    { id: "fu3", kanji: "本棚", kana: "ほんだな", romaji: "Hondana", zh: "書架", emoji: "📚", sentenceJa: "本棚に本があります。", sentenceZh: "書架上有書。" },
+                    { id: "fu4", kanji: "ソファ", kana: "そふぁ", romaji: "Sofa", zh: "沙發", emoji: "🛋️", sentenceJa: "ソファに座ります。", sentenceZh: "坐在沙發上。" },
+                    { id: "fu5", kanji: "テーブル", kana: "てーぶる", romaji: "Teeburu", zh: "桌子", emoji: "🪑", sentenceJa: "テーブルの上に花があります。", sentenceZh: "桌上有花。" },
+                    { id: "fu6", kanji: "棚", kana: "たな", romaji: "Tana", zh: "架子", emoji: "🗄️", sentenceJa: "棚に箱があります。", sentenceZh: "架子上有箱子。" },
+                    { id: "fu7", kanji: "引き出し", kana: "ひきだし", romaji: "Hikidashi", zh: "抽屜", emoji: "🗃️", sentenceJa: "引き出しを開けます。", sentenceZh: "打開抽屜。" },
+                    { id: "fu8", kanji: "電灯", kana: "でんとう", romaji: "Dentou", zh: "電燈", emoji: "💡", sentenceJa: "電灯が明るいです。", sentenceZh: "電燈很亮。" },
+                    { id: "fu9", kanji: "時計台", kana: "とけいだい", romaji: "Tokeidai", zh: "鐘樓", emoji: "🕰️", sentenceJa: "町に時計台があります。", sentenceZh: "城鎮裡有鐘樓。" },
+                    { id: "fu10", kanji: "カーテン", kana: "かーてん", romaji: "Kaaten", zh: "窗簾", emoji: "🪟", sentenceJa: "カーテンを開けます。", sentenceZh: "拉開窗簾。" }
+                ]
+            },
+            shopping: {
+                title: "購物與金錢",
+                desc: "買い物、値段、お金、円、安い、高い等",
+                icon: "🛒",
+                items: [
+                    { id: "sh1", kanji: "買い物", kana: "かいもの", romaji: "Kaimono", zh: "購物", emoji: "🛍️", sentenceJa: "母と買い物に行きます。", sentenceZh: "和媽媽去購物。" },
+                    { id: "sh2", kanji: "値段", kana: "ねだん", romaji: "Nedan", zh: "價格", emoji: "🏷️", sentenceJa: "この値段はいくらですか。", sentenceZh: "這個價格是多少？" },
+                    { id: "sh3", kanji: "お金", kana: "おかね", romaji: "Okane", zh: "錢", emoji: "💰", sentenceJa: "お金を払います。", sentenceZh: "付錢。" },
+                    { id: "sh4", kanji: "円", kana: "えん", romaji: "En", zh: "日圓", emoji: "💴", sentenceJa: "百円あります。", sentenceZh: "有一百日圓。" },
+                    { id: "sh5", kanji: "店員", kana: "てんいん", romaji: "Tenin", zh: "店員", emoji: "🧑‍💼", sentenceJa: "店員に聞きます。", sentenceZh: "詢問店員。" },
+                    { id: "sh6", kanji: "安い", kana: "やすい", romaji: "Yasui", zh: "便宜的", emoji: "🏷️", sentenceJa: "この服は安いです。", sentenceZh: "這件衣服很便宜。" },
+                    { id: "sh7", kanji: "高い", kana: "たかい", romaji: "Takai", zh: "貴的、高的", emoji: "💎", sentenceJa: "この時計は高いです。", sentenceZh: "這隻手錶很貴。" },
+                    { id: "sh8", kanji: "売る", kana: "うる", romaji: "Uru", zh: "賣", emoji: "🏪", sentenceJa: "店で本を売っています。", sentenceZh: "店裡有賣書。" },
+                    { id: "sh9", kanji: "買う", kana: "かう", romaji: "Kau", zh: "買", emoji: "🛍️", sentenceJa: "新しい鞄を買います。", sentenceZh: "買新包包。" },
+                    { id: "sh10", kanji: "お釣り", kana: "おつり", romaji: "Otsuri", zh: "找零", emoji: "🪙", sentenceJa: "お釣りをもらいます。", sentenceZh: "拿到找零。" }
+                ]
+            },
+            jobs: {
+                title: "職業與工作",
+                desc: "会社員、医者、看護師、警察官、料理人等",
+                icon: "👨‍🍳",
+                items: [
+                    { id: "jb1", kanji: "会社員", kana: "かいしゃいん", romaji: "Kaishain", zh: "公司職員", emoji: "👔", sentenceJa: "父は会社員です。", sentenceZh: "爸爸是公司職員。" },
+                    { id: "jb2", kanji: "医者", kana: "いしゃ", romaji: "Isha", zh: "醫生", emoji: "🩺", sentenceJa: "兄は医者です。", sentenceZh: "哥哥是醫生。" },
+                    { id: "jb3", kanji: "看護師", kana: "かんごし", romaji: "Kangoshi", zh: "護理師", emoji: "🏥", sentenceJa: "姉は看護師です。", sentenceZh: "姊姊是護理師。" },
+                    { id: "jb4", kanji: "警察官", kana: "けいさつかん", romaji: "Keisatsukan", zh: "警察", emoji: "👮", sentenceJa: "警察官がいます。", sentenceZh: "有警察。" },
+                    { id: "jb5", kanji: "運転手", kana: "うんてんしゅ", romaji: "Untenshu", zh: "司機", emoji: "🚌", sentenceJa: "父は運転手です。", sentenceZh: "爸爸是司機。" },
+                    { id: "jb6", kanji: "料理人", kana: "りょうりにん", romaji: "Ryourinin", zh: "廚師", emoji: "👨‍🍳", sentenceJa: "料理人になりたいです。", sentenceZh: "我想成為廚師。" },
+                    { id: "jb7", kanji: "店長", kana: "てんちょう", romaji: "Tenchou", zh: "店長", emoji: "🏪", sentenceJa: "店長は親切です。", sentenceZh: "店長很親切。" },
+                    { id: "jb8", kanji: "歌手", kana: "かしゅ", romaji: "Kashu", zh: "歌手", emoji: "🎤", sentenceJa: "歌手の歌を聞きます。", sentenceZh: "聽歌手唱歌。" },
+                    { id: "jb9", kanji: "作家", kana: "さっか", romaji: "Sakka", zh: "作家", emoji: "✍️", sentenceJa: "作家の本を読みます。", sentenceZh: "讀作家的書。" },
+                    { id: "jb10", kanji: "仕事", kana: "しごと", romaji: "Shigoto", zh: "工作", emoji: "💼", sentenceJa: "父は仕事をしています。", sentenceZh: "爸爸正在工作。" }
+                ]
+            },
+            animals: {
+                title: "動物與昆蟲",
+                desc: "犬、猫、鳥、馬、牛、豚、兎、虫等",
+                icon: "🐈",
+                items: [
+                    { id: "an1", kanji: "犬", kana: "いぬ", romaji: "Inu", zh: "狗", emoji: "🐕", sentenceJa: "犬が好きです。", sentenceZh: "我喜歡狗。" },
+                    { id: "an2", kanji: "猫", kana: "ねこ", romaji: "Neko", zh: "貓", emoji: "🐈", sentenceJa: "猫がいます。", sentenceZh: "有一隻貓。" },
+                    { id: "an3", kanji: "鳥", kana: "とり", romaji: "Tori", zh: "鳥", emoji: "🐦", sentenceJa: "鳥が空を飛びます。", sentenceZh: "鳥在天空飛翔。" },
+                    { id: "an4", kanji: "馬", kana: "うま", romaji: "Uma", zh: "馬", emoji: "🐎", sentenceJa: "馬が走っています。", sentenceZh: "馬正在跑。" },
+                    { id: "an5", kanji: "牛", kana: "うし", romaji: "Ushi", zh: "牛", emoji: "🐄", sentenceJa: "牛は草を食べます。", sentenceZh: "牛吃草。" },
+                    { id: "an6", kanji: "豚", kana: "ぶた", romaji: "Buta", zh: "豬", emoji: "🐖", sentenceJa: "豚がいます。", sentenceZh: "有豬。" },
+                    { id: "an7", kanji: "兎", kana: "うさぎ", romaji: "Usagi", zh: "兔子", emoji: "🐇", sentenceJa: "兎はかわいいです。", sentenceZh: "兔子很可愛。" },
+                    { id: "an8", kanji: "魚", kana: "さかな", romaji: "Sakana", zh: "魚", emoji: "🐟", sentenceJa: "魚が泳いでいます。", sentenceZh: "魚正在游泳。" },
+                    { id: "an9", kanji: "虫", kana: "むし", romaji: "Mushi", zh: "昆蟲", emoji: "🐛", sentenceJa: "小さい虫がいます。", sentenceZh: "有小昆蟲。" },
+                    { id: "an10", kanji: "蛙", kana: "かえる", romaji: "Kaeru", zh: "青蛙", emoji: "🐸", sentenceJa: "蛙が鳴いています。", sentenceZh: "青蛙正在鳴叫。" }
+                ]
+            },
+            seasons: {
+                title: "四季與月份",
+                desc: "春、夏、秋、冬與一月至六月等",
+                icon: "🍁",
+                items: [
+                    { id: "sea1", kanji: "春", kana: "はる", romaji: "Haru", zh: "春天", emoji: "🌸", sentenceJa: "春は暖かいです。", sentenceZh: "春天很溫暖。" },
+                    { id: "sea2", kanji: "夏", kana: "なつ", romaji: "Natsu", zh: "夏天", emoji: "☀️", sentenceJa: "夏は暑いです。", sentenceZh: "夏天很熱。" },
+                    { id: "sea3", kanji: "秋", kana: "あき", romaji: "Aki", zh: "秋天", emoji: "🍁", sentenceJa: "秋は涼しいです。", sentenceZh: "秋天很涼爽。" },
+                    { id: "sea4", kanji: "冬", kana: "ふゆ", romaji: "Fuyu", zh: "冬天", emoji: "❄️", sentenceJa: "冬は寒いです。", sentenceZh: "冬天很冷。" },
+                    { id: "sea5", kanji: "一月", kana: "いちがつ", romaji: "Ichigatsu", zh: "一月", emoji: "📅", sentenceJa: "一月は寒いです。", sentenceZh: "一月很冷。" },
+                    { id: "sea6", kanji: "二月", kana: "にがつ", romaji: "Nigatsu", zh: "二月", emoji: "📅", sentenceJa: "二月に雪が降ります。", sentenceZh: "二月會下雪。" },
+                    { id: "sea7", kanji: "三月", kana: "さんがつ", romaji: "Sangatsu", zh: "三月", emoji: "📅", sentenceJa: "三月に花が咲きます。", sentenceZh: "三月花朵盛開。" },
+                    { id: "sea8", kanji: "四月", kana: "しがつ", romaji: "Shigatsu", zh: "四月", emoji: "📅", sentenceJa: "四月に学校が始まります。", sentenceZh: "四月學校開學。" },
+                    { id: "sea9", kanji: "五月", kana: "ごがつ", romaji: "Gogatsu", zh: "五月", emoji: "📅", sentenceJa: "五月は暖かいです。", sentenceZh: "五月很溫暖。" },
+                    { id: "sea10", kanji: "六月", kana: "ろくがつ", romaji: "Rokugatsu", zh: "六月", emoji: "📅", sentenceJa: "六月は雨が多いです。", sentenceZh: "六月雨水很多。" }
+                ]
+            },
+            numbers: {
+                title: "數字與數量",
+                desc: "一つ、二つ、三つ、四つ、十等數量詞",
+                icon: "🔢",
+                items: [
+                    { id: "nu1", kanji: "一つ", kana: "ひとつ", romaji: "Hitotsu", zh: "一個", emoji: "1️⃣", sentenceJa: "りんごを一つください。", sentenceZh: "請給我一顆蘋果。" },
+                    { id: "nu2", kanji: "二つ", kana: "ふたつ", romaji: "Futatsu", zh: "兩個", emoji: "2️⃣", sentenceJa: "卵を二つ買います。", sentenceZh: "買兩顆蛋。" },
+                    { id: "nu3", kanji: "三つ", kana: "みっつ", romaji: "Mittsu", zh: "三個", emoji: "3️⃣", sentenceJa: "箱が三つあります。", sentenceZh: "有三個箱子。" },
+                    { id: "nu4", kanji: "四つ", kana: "よっつ", romaji: "Yottsu", zh: "四個", emoji: "4️⃣", sentenceJa: "りんごを四つ食べます。", sentenceZh: "吃四顆蘋果。" },
+                    { id: "nu5", kanji: "五つ", kana: "いつつ", romaji: "Itsutsu", zh: "五個", emoji: "5️⃣", sentenceJa: "五つください。", sentenceZh: "請給我五個。" },
+                    { id: "nu6", kanji: "六つ", kana: "むっつ", romaji: "Muttsu", zh: "六個", emoji: "6️⃣", sentenceJa: "六つあります。", sentenceZh: "有六個。" },
+                    { id: "nu7", kanji: "七つ", kana: "ななつ", romaji: "Nanatsu", zh: "七個", emoji: "7️⃣", sentenceJa: "七つ買います。", sentenceZh: "買七個。" },
+                    { id: "nu8", kanji: "八つ", kana: "やっつ", romaji: "Yattsu", zh: "八個", emoji: "8️⃣", sentenceJa: "八つあります。", sentenceZh: "有八個。" },
+                    { id: "nu9", kanji: "九つ", kana: "ここのつ", romaji: "Kokonotsu", zh: "九個", emoji: "9️⃣", sentenceJa: "九つください。", sentenceZh: "請給我九個。" },
+                    { id: "nu10", kanji: "十", kana: "じゅう", romaji: "Juu", zh: "十", emoji: "🔟", sentenceJa: "十人います。", sentenceZh: "有十個人。" }
+                ]
+            },
+            city: {
+                title: "城市與公共設施",
+                desc: "図書館、空港、ホテル、スーパー、映画館等",
+                icon: "🏙️",
+                items: [
+                    { id: "ci1", kanji: "図書館", kana: "としょかん", romaji: "Toshokan", zh: "圖書館", emoji: "📚", sentenceJa: "図書館で本を読みます。", sentenceZh: "在圖書館讀書。" },
+                    { id: "ci2", kanji: "学校", kana: "がっこう", romaji: "Gakkou", zh: "學校", emoji: "🏫", sentenceJa: "学校は近いです。", sentenceZh: "學校很近。" },
+                    { id: "ci3", kanji: "空港", kana: "くうこう", romaji: "Kuukou", zh: "機場", emoji: "✈️", sentenceJa: "空港へ行きます。", sentenceZh: "去機場。" },
+                    { id: "ci4", kanji: "ホテル", kana: "ほてる", romaji: "Hoteru", zh: "飯店", emoji: "🏨", sentenceJa: "ホテルに泊まります。", sentenceZh: "住在飯店。" },
+                    { id: "ci5", kanji: "スーパー", kana: "すーぱー", romaji: "Suupaa", zh: "超市", emoji: "🛒", sentenceJa: "スーパーで野菜を買います。", sentenceZh: "在超市買蔬菜。" },
+                    { id: "ci6", kanji: "映画館", kana: "えいがかん", romaji: "Eigakan", zh: "電影院", emoji: "🎬", sentenceJa: "映画館で映画を見ます。", sentenceZh: "在電影院看電影。" },
+                    { id: "ci7", kanji: "レストラン", kana: "れすとらん", romaji: "Resutoran", zh: "餐廳", emoji: "🍽️", sentenceJa: "レストランで食べます。", sentenceZh: "在餐廳吃飯。" },
+                    { id: "ci8", kanji: "喫茶店", kana: "きっさてん", romaji: "Kissaten", zh: "咖啡店", emoji: "☕", sentenceJa: "喫茶店でコーヒーを飲みます。", sentenceZh: "在咖啡店喝咖啡。" },
+                    { id: "ci9", kanji: "橋", kana: "はし", romaji: "Hashi", zh: "橋", emoji: "🌉", sentenceJa: "橋を渡ります。", sentenceZh: "走過橋。" },
+                    { id: "ci10", kanji: "交番", kana: "こうばん", romaji: "Kouban", zh: "派出所", emoji: "🚔", sentenceJa: "交番は駅の前です。", sentenceZh: "派出所在車站前面。" }
+                ]
+            },
+            hobbies: {
+                title: "興趣與休閒",
+                desc: "スポーツ、サッカー、水泳、旅行、読書等",
+                icon: "⚽",
+                items: [
+                    { id: "hb1", kanji: "スポーツ", kana: "すぽーつ", romaji: "Supootsu", zh: "運動", emoji: "⚽", sentenceJa: "スポーツが好きです。", sentenceZh: "我喜歡運動。" },
+                    { id: "hb2", kanji: "サッカー", kana: "さっかー", romaji: "Sakkaa", zh: "足球", emoji: "⚽", sentenceJa: "サッカーをします。", sentenceZh: "踢足球。" },
+                    { id: "hb3", kanji: "野球", kana: "やきゅう", romaji: "Yakyuu", zh: "棒球", emoji: "⚾", sentenceJa: "野球を見ます。", sentenceZh: "看棒球。" },
+                    { id: "hb4", kanji: "水泳", kana: "すいえい", romaji: "Suiei", zh: "游泳", emoji: "🏊", sentenceJa: "水泳が好きです。", sentenceZh: "我喜歡游泳。" },
+                    { id: "hb5", kanji: "旅行", kana: "りょこう", romaji: "Ryokou", zh: "旅行", emoji: "✈️", sentenceJa: "日本へ旅行します。", sentenceZh: "去日本旅行。" },
+                    { id: "hb6", kanji: "写真", kana: "しゃしん", romaji: "Shashin", zh: "照片", emoji: "📸", sentenceJa: "写真を撮ります。", sentenceZh: "拍照。" },
+                    { id: "hb7", kanji: "映画", kana: "えいが", romaji: "Eiga", zh: "電影", emoji: "🎬", sentenceJa: "映画を見ます。", sentenceZh: "看電影。" },
+                    { id: "hb8", kanji: "読書", kana: "どくしょ", romaji: "Dokusho", zh: "閱讀", emoji: "📖", sentenceJa: "読書が好きです。", sentenceZh: "我喜歡閱讀。" },
+                    { id: "hb9", kanji: "散歩", kana: "さんぽ", romaji: "Sanpo", zh: "散步", emoji: "🚶", sentenceJa: "公園を散歩します。", sentenceZh: "在公園散步。" },
+                    { id: "hb10", kanji: "絵", kana: "え", romaji: "E", zh: "畫、圖畫", emoji: "🎨", sentenceJa: "絵を描きます。", sentenceZh: "畫畫。" }
+                ]
+            },
+            feelings: {
+                title: "情緒與感受",
+                desc: "嬉しい、悲しい、楽しい、寂しい、元気等",
+                icon: "😊",
+                items: [
+                    { id: "fl1", kanji: "嬉しい", kana: "うれしい", romaji: "Ureshii", zh: "開心的", emoji: "😊", sentenceJa: "今日は嬉しいです。", sentenceZh: "今天很開心。" },
+                    { id: "fl2", kanji: "悲しい", kana: "かなしい", romaji: "Kanashii", zh: "悲傷的", emoji: "😢", sentenceJa: "少し悲しいです。", sentenceZh: "有點難過。" },
+                    { id: "fl3", kanji: "楽しい", kana: "たのしい", romaji: "Tanoshii", zh: "愉快的", emoji: "😄", sentenceJa: "旅行は楽しいです。", sentenceZh: "旅行很愉快。" },
+                    { id: "fl4", kanji: "寂しい", kana: "さびしい", romaji: "Sabishii", zh: "寂寞的", emoji: "🥺", sentenceJa: "一人で寂しいです。", sentenceZh: "一個人很寂寞。" },
+                    { id: "fl5", kanji: "怖い", kana: "こわい", romaji: "Kowai", zh: "可怕的", emoji: "😨", sentenceJa: "この映画は怖いです。", sentenceZh: "這部電影很可怕。" },
+                    { id: "fl6", kanji: "好き", kana: "すき", romaji: "Suki", zh: "喜歡", emoji: "❤️", sentenceJa: "日本語が好きです。", sentenceZh: "我喜歡日語。" },
+                    { id: "fl7", kanji: "嫌い", kana: "きらい", romaji: "Kirai", zh: "討厭", emoji: "🙅", sentenceJa: "雨が嫌いです。", sentenceZh: "我討厭下雨。" },
+                    { id: "fl8", kanji: "元気", kana: "げんき", romaji: "Genki", zh: "有精神、健康", emoji: "💪", sentenceJa: "今日は元気です。", sentenceZh: "今天很有精神。" },
+                    { id: "fl9", kanji: "忙しい", kana: "いそがしい", romaji: "Isogashii", zh: "忙碌的", emoji: "⏰", sentenceJa: "今日は忙しいです。", sentenceZh: "今天很忙。" },
+                    { id: "fl10", kanji: "疲れる", kana: "つかれる", romaji: "Tsukareru", zh: "疲累", emoji: "😴", sentenceJa: "たくさん歩いて疲れました。", sentenceZh: "走了很多路，累了。" }
+                ]
+            }
+        };
+
+        let currentThemeKey = 'family';
+        let currentItems = [...themesData.family.items];
+        let filteredItems = [...currentItems];
+        let currentIndex = 0;
+        let soundEnabled = true;
+        let currentMode = 'single';
+        let quizDeck = [];
+        let quizIndex = 0;
+        let quizMastered = new Set();
+        let quizNeedsReview = new Set();
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = AudioContextClass ? new AudioContextClass() : null;
+
+        function playFlipSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        function playSuccessSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.09);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.22);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.22);
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            icon.className = soundEnabled ? 'fa-solid fa-volume-high text-xs' : 'fa-solid fa-volume-xmark text-xs';
+        }
+
+        function speakJapanese(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function playCurrentTTS() {
+            if (filteredItems.length > 0) speakJapanese(filteredItems[currentIndex].kanji);
+        }
+        function playSentenceTTS() {
+            if (filteredItems.length > 0) speakJapanese(filteredItems[currentIndex].sentenceJa);
+        }
+        function playQuizTTS() {
+            if (quizDeck.length > 0) speakJapanese(quizDeck[quizIndex].kanji);
+        }
+
+        function flipCard(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.classList.toggle('rotate-y-180');
+                playFlipSound();
+            }
+        }
+        function unflipCard(cardId) {
+            const card = document.getElementById(cardId);
+            if (card && card.classList.contains('rotate-y-180')) card.classList.remove('rotate-y-180');
+        }
+
+        // 動態生成 24 個主題卡片選單
+        function renderThemeHub() {
+            const container = document.getElementById('theme-grid-container');
+            container.innerHTML = '';
+            
+            for (const [key, theme] of Object.entries(themesData)) {
+                const count = theme.items.length;
+                const card = document.createElement('div');
+                card.className = 'group cursor-pointer rounded-3xl p-6 bg-washi-card border border-wood-dark/15 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col justify-between';
+                card.onclick = () => selectTheme(key);
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-2xl font-bold">${theme.icon || '📖'}</span>
+                        <span class="text-xs font-bold text-gray-400 bg-wood-light px-2.5 py-1 rounded-full">${count} 個單字</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-indigo-jp japanese-font mb-1 group-hover:text-vermilion transition">${theme.title}</h3>
+                        <p class="text-xs text-gray-500 mb-4">${theme.desc}</p>
+                    </div>
+                    <div class="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-matcha">
+                        <span>開始學習</span>
+                        <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function showHub() {
+            document.getElementById('theme-hub').classList.remove('hidden');
+            document.getElementById('view-single').classList.add('hidden');
+            document.getElementById('view-single').classList.remove('flex');
+            document.getElementById('view-grid').classList.add('hidden');
+            document.getElementById('view-quiz').classList.add('hidden');
+            document.getElementById('view-quiz').classList.remove('flex');
+            document.getElementById('header-controls').classList.add('hidden');
+            document.getElementById('header-controls').classList.remove('flex');
+        }
+
+        function selectTheme(themeKey) {
+            if (!themesData[themeKey]) return;
+            currentThemeKey = themeKey;
+            currentItems = [...themesData[themeKey].items];
+            filteredItems = [...currentItems];
+            currentIndex = 0;
+            document.getElementById('theme-hub').classList.add('hidden');
+            document.getElementById('header-controls').classList.remove('hidden');
+            document.getElementById('header-controls').classList.add('flex');
+            document.getElementById('search-input').value = '';
+            switchMode('single');
+        }
+
+        function renderSingleCard() {
+            unflipCard('single-card');
+            const themeTitle = themesData[currentThemeKey].title;
+            document.getElementById('single-theme-title').innerText = themeTitle;
+
+            if (filteredItems.length === 0) {
+                document.getElementById('front-kanji').innerText = "無項目";
+                document.getElementById('front-romaji').innerText = "請嘗試重新搜尋";
+                document.getElementById('front-emoji').innerText = "🔍";
+                document.getElementById('back-kana').innerText = "-";
+                document.getElementById('back-zh').innerText = "找不到相關單字";
+                document.getElementById('back-sentence-ja').innerText = "-";
+                document.getElementById('back-sentence-zh').innerText = "-";
+                document.getElementById('single-progress-text').innerText = "0 / 0";
+                return;
+            }
+            if (currentIndex >= filteredItems.length) currentIndex = 0;
+            const item = filteredItems[currentIndex];
+            document.getElementById('front-category-tag').innerText = themeTitle;
+            document.getElementById('front-emoji').innerText = item.emoji;
+            document.getElementById('front-kanji').innerText = item.kanji;
+            document.getElementById('front-romaji').innerText = item.romaji;
+            document.getElementById('back-kana').innerText = item.kana;
+            document.getElementById('back-zh').innerText = item.zh;
+            document.getElementById('back-sentence-ja').innerText = item.sentenceJa;
+            document.getElementById('back-sentence-zh').innerText = item.sentenceZh;
+            document.getElementById('single-progress-text').innerText = `${currentIndex + 1} / ${filteredItems.length}`;
+        }
+
+        function nextCard() {
+            if (filteredItems.length === 0) return;
+            currentIndex = (currentIndex + 1) % filteredItems.length;
+            renderSingleCard();
+        }
+        function prevCard() {
+            if (filteredItems.length === 0) return;
+            currentIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
+            renderSingleCard();
+        }
+
+        function renderGridView() {
+            const container = document.getElementById('grid-container');
+            const badge = document.getElementById('grid-count-badge');
+            const title = document.getElementById('grid-theme-title');
+            title.innerText = `${themesData[currentThemeKey].title} 一覽`;
+            badge.innerText = `共 ${filteredItems.length} 項`;
+            container.innerHTML = '';
+
+            if (filteredItems.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">沒有符合搜尋的單字</div>`;
+                return;
+            }
+
+            filteredItems.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = 'h-64 perspective-1000 cursor-pointer';
+                card.onclick = () => flipCard(`grid-card-${idx}`);
+                card.innerHTML = `
+                    <div id="grid-card-${idx}" class="w-full h-full relative transform-style-3d transition-transform duration-500 rounded-2xl shadow-sm border border-wood-dark/10">
+                        <div class="absolute inset-0 w-full h-full backface-hidden rounded-2xl p-4 flex flex-col justify-between items-center bg-washi-card">
+                            <div class="w-full flex justify-between items-center">
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-wood-light text-wood-dark font-bold">${item.romaji}</span>
+                                <button onclick="event.stopPropagation(); speakJapanese('${item.kanji}')" class="text-gray-400 hover:text-indigo-jp p-1"><i class="fa-solid fa-volume-high text-xs"></i></button>
+                            </div>
+                            <div class="text-center my-auto">
+                                <div class="text-3xl mb-1">${item.emoji}</div>
+                                <div class="text-2xl font-black japanese-font text-indigo-jp">${item.kanji}</div>
+                                <div class="text-xs text-matcha font-bold mt-0.5">${item.kana}</div>
+                            </div>
+                            <div class="text-[10px] text-gray-300">點擊翻面</div>
+                        </div>
+                        <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl p-4 flex flex-col justify-between items-center bg-washi border border-wood-dark/20 text-center">
+                            <div class="text-xs font-bold text-sakura-dark japanese-font">${item.kana}</div>
+                            <div class="my-auto w-full">
+                                <div class="text-xl font-extrabold text-indigo-jp mb-1">${item.zh}</div>
+                                <div class="p-2 rounded-lg bg-white/90 border border-gray-100 text-left">
+                                    <div class="text-[9px] font-bold text-vermilion">例句</div>
+                                    <div class="text-xs font-bold text-indigo-jp japanese-font">${item.sentenceJa}</div>
+                                    <div class="text-[10px] text-gray-500">${item.sentenceZh}</div>
+                                </div>
+                            </div>
+                            <div class="text-[10px] text-gray-300">點擊翻面</div>
+                        </div>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function prepareQuiz() {
+            quizDeck = [...currentItems];
+            shuffleArray(quizDeck);
+            quizIndex = 0;
+            quizMastered.clear();
+            quizNeedsReview.clear();
+            document.getElementById('quiz-stat-mastered').innerText = `0 / ${quizDeck.length}`;
+            document.getElementById('quiz-stat-review').innerText = `0 / ${quizDeck.length}`;
+            renderQuizCard();
+        }
+
+        function renderQuizCard() {
+            unflipCard('quiz-card');
+            if (quizDeck.length === 0) return;
+            if (quizIndex >= quizDeck.length) {
+                shuffleArray(quizDeck);
+                quizIndex = 0;
+            }
+            const data = quizDeck[quizIndex];
+            document.getElementById('quiz-front-emoji').innerText = data.emoji;
+            document.getElementById('quiz-front-kanji').innerText = data.kanji;
+            document.getElementById('quiz-front-romaji').innerText = data.romaji;
+            document.getElementById('quiz-back-kana').innerText = data.kana;
+            document.getElementById('quiz-back-zh').innerText = data.zh;
+            document.getElementById('quiz-back-sentence').innerText = data.sentenceJa;
+            document.getElementById('quiz-back-sentence-zh').innerText = data.sentenceZh;
+        }
+
+        function markQuiz(mastered) {
+            if (quizDeck.length === 0) return;
+            const currentItem = quizDeck[quizIndex];
+            if (mastered) {
+                quizMastered.add(currentItem.id);
+                quizNeedsReview.delete(currentItem.id);
+                playSuccessSound();
+            } else {
+                quizNeedsReview.add(currentItem.id);
+                quizMastered.delete(currentItem.id);
+            }
+            document.getElementById('quiz-stat-mastered').innerText = `${quizMastered.size} / ${quizDeck.length}`;
+            document.getElementById('quiz-stat-review').innerText = `${quizNeedsReview.size} / ${quizDeck.length}`;
+            quizIndex = (quizIndex + 1) % quizDeck.length;
+            renderQuizCard();
+        }
+
+        function resetQuiz() { prepareQuiz(); }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            filteredItems = currentItems.filter(item =>
+                item.kanji.toLowerCase().includes(query) ||
+                item.kana.toLowerCase().includes(query) ||
+                item.romaji.toLowerCase().includes(query) ||
+                item.zh.toLowerCase().includes(query)
+            );
+            currentIndex = 0;
+            if (currentMode === 'single') renderSingleCard();
+            if (currentMode === 'grid') renderGridView();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const modes = ['single', 'grid', 'quiz'];
+            modes.forEach(m => {
+                const view = document.getElementById(`view-${m}`);
+                const btn = document.getElementById(`mode-${m}`);
+                if (m === mode) {
+                    view.classList.remove('hidden');
+                    if (m === 'single' || m === 'quiz') view.classList.add('flex');
+                    btn.classList.add('bg-white', 'text-indigo-jp', 'shadow-sm');
+                    btn.classList.remove('text-gray-600');
+                } else {
+                    view.classList.add('hidden');
+                    view.classList.remove('flex');
+                    btn.classList.remove('bg-white', 'text-indigo-jp', 'shadow-sm');
+                    btn.classList.add('text-gray-600');
+                }
+            });
+            if (mode === 'single') renderSingleCard();
+            if (mode === 'grid') renderGridView();
+            if (mode === 'quiz') prepareQuiz();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const singleView = document.getElementById('view-single');
+            if (!singleView.classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') nextCard();
+                if (e.key === 'ArrowLeft') prevCard();
+                if (e.key === ' ' || e.code === 'Space') {
+                    if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+                    e.preventDefault();
+                    flipCard('single-card');
+                }
+            }
+        });
+
+        window.onload = () => {
+            renderThemeHub();
+            showHub();
+        };
+    </script>
+</body>
+</html>
